@@ -3,28 +3,25 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { getSocket } from '../../hooks/useSocket'
 import { useGameStore } from '../../store/gameStore'
-import { getRoleComposition } from '../../utils/roles'
-import { ROLE_DEFS } from '../../utils/roles'
+import { getRoleComposition, ROLE_DEFS } from '../../utils/roles'
 
 export default function LobbyScreen() {
   const navigate = useNavigate()
   const store    = useGameStore()
   const socket   = getSocket()
   const room     = store.room
-  const me       = store.getMe()
 
   const [narratorId, setNarratorId] = useState<string>('__random__')
   const [copied, setCopied]         = useState(false)
+  const isHost = room?.hostId === socket.id
 
-  // Redirect when game starts
   useEffect(() => {
     if (room?.phase === 'role-reveal') navigate('/reveal')
   }, [room?.phase])
 
   if (!room) { navigate('/'); return null }
 
-  const isHost = room.hostId === socket.id
-  const comp   = getRoleComposition(room.players.length)
+  const comp = getRoleComposition(room.players.length)
 
   function copyCode() {
     navigator.clipboard.writeText(room!.code)
@@ -46,14 +43,9 @@ export default function LobbyScreen() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md">
 
-        {/* Header */}
         <div className="text-center mb-8">
-          <p className="font-mono text-[0.65rem] tracking-[0.3em] text-gold uppercase mb-2">
-            Waiting Room
-          </p>
+          <p className="font-mono text-[0.65rem] tracking-[0.3em] text-gold uppercase mb-2">Waiting Room</p>
           <h2 className="font-serif font-black text-4xl mb-3">The Gathering</h2>
-
-          {/* Room code */}
           <button onClick={copyCode}
             className="inline-flex items-center gap-2 border border-white/20 rounded-sm px-4 py-2 hover:border-gold transition-colors">
             <span className="font-mono text-xl tracking-[0.3em] text-gold font-bold">{room.code}</span>
@@ -63,7 +55,6 @@ export default function LobbyScreen() {
           </button>
         </div>
 
-        {/* Players list */}
         <div className="mb-6">
           <p className="font-mono text-[0.62rem] tracking-[0.2em] text-cream/40 uppercase mb-3">
             {room.players.length} Player{room.players.length !== 1 ? 's' : ''} Joined
@@ -80,9 +71,7 @@ export default function LobbyScreen() {
                   </div>
                   <span className="font-body text-cream flex-1">{p.name}</span>
                   {p.id === room.hostId && (
-                    <span className="font-mono text-[0.58rem] text-gold tracking-wider uppercase border border-gold/30 px-2 py-0.5 rounded-sm">
-                      Host
-                    </span>
+                    <span className="font-mono text-[0.58rem] text-gold tracking-wider uppercase border border-gold/30 px-2 py-0.5 rounded-sm">Host</span>
                   )}
                   {p.id === socket.id && (
                     <span className="font-mono text-[0.58rem] text-cream/40 tracking-wider uppercase">You</span>
@@ -93,77 +82,57 @@ export default function LobbyScreen() {
           </div>
         </div>
 
-        {/* Role composition preview */}
         <div className="mb-6 p-4 border border-white/8 rounded-sm bg-black/15">
-          <p className="font-mono text-[0.6rem] tracking-[0.2em] text-cream/35 uppercase mb-3">
-            Role Composition
-          </p>
+          <p className="font-mono text-[0.6rem] tracking-[0.2em] text-cream/35 uppercase mb-3">Role Composition</p>
           <div className="flex flex-wrap gap-2">
             {(Object.entries(comp) as [string, number][])
               .filter(([, v]) => v > 0)
               .map(([role, count]) => {
                 const def = ROLE_DEFS[role as keyof typeof ROLE_DEFS]
                 return (
-                  <div key={role}
-                    className="flex items-center gap-1 px-2 py-1 rounded-sm border border-crimson/25 bg-crimson/6">
+                  <div key={role} className="flex items-center gap-1 px-2 py-1 rounded-sm border border-crimson/25 bg-crimson/6">
                     <span className="text-sm">{def?.icon}</span>
-                    <span className="font-mono text-[0.6rem] text-crimson/80 tracking-wide">
-                      {count}× {role}
-                    </span>
+                    <span className="font-mono text-[0.6rem] text-crimson/80 tracking-wide">{count}× {role}</span>
                   </div>
                 )
               })}
           </div>
         </div>
 
-        {/* Narrator selection (host only) */}
         {isHost && (
           <div className="mb-6">
-            <p className="font-mono text-[0.62rem] tracking-[0.2em] text-gold uppercase mb-3">
-              Choose Narrator
-            </p>
+            <p className="font-mono text-[0.62rem] tracking-[0.2em] text-gold uppercase mb-3">Choose Narrator</p>
             <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setNarratorId('__random__')}
+              <button onClick={() => setNarratorId('__random__')}
                 className={`p-3 text-left border rounded-sm transition-all font-body text-sm ${
-                  narratorId === '__random__'
-                    ? 'border-crimson bg-crimson/10 text-cream'
-                    : 'border-white/15 text-cream/60 hover:border-white/30'
+                  narratorId === '__random__' ? 'border-crimson bg-crimson/10 text-cream' : 'border-white/15 text-cream/60 hover:border-white/30'
                 }`}>
                 🎲 Random
               </button>
               {room.players.map(p => (
-                <button key={p.id}
-                  onClick={() => setNarratorId(p.id)}
+                <button key={p.id} onClick={() => setNarratorId(p.id)}
                   className={`p-3 text-left border rounded-sm transition-all font-body text-sm ${
-                    narratorId === p.id
-                      ? 'border-crimson bg-crimson/10 text-cream'
-                      : 'border-white/15 text-cream/60 hover:border-white/30'
+                    narratorId === p.id ? 'border-crimson bg-crimson/10 text-cream' : 'border-white/15 text-cream/60 hover:border-white/30'
                   }`}>
-                  {p.name}
-                  {p.id === socket.id ? ' (You)' : ''}
+                  {p.name}{p.id === socket.id ? ' (You)' : ''}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Start button */}
         {isHost ? (
-          <button className="btn-primary w-full"
-            onClick={startGame}
-            disabled={room.players.length < 5}>
+          <button className="btn-primary w-full" onClick={startGame} disabled={room.players.length < 5}>
             {room.players.length < 5
               ? `Need ${5 - room.players.length} more player${5 - room.players.length !== 1 ? 's' : ''}`
               : 'Deal the Roles'}
           </button>
         ) : (
-          <p className="text-center font-body italic text-cream/40 text-sm">
-            Waiting for the host to start the game…
-          </p>
+          <p className="text-center font-body italic text-cream/40 text-sm">Waiting for the host to start…</p>
         )}
 
-        <button className="btn-ghost w-full mt-3" onClick={() => { socket.emit('room:leave'); store.setRoom(null); navigate('/') }}>
+        <button className="btn-ghost w-full mt-3"
+          onClick={() => { socket.emit('room:leave'); store.setRoom(null); navigate('/') }}>
           Leave Room
         </button>
       </motion.div>

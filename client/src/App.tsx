@@ -7,11 +7,9 @@ import GameBoardScreen  from './components/screens/GameBoardScreen'
 import EndScreen        from './components/screens/EndScreen'
 import HistoryScreen    from './components/screens/HistoryScreen'
 import AudioControl     from './components/ui/AudioControl'
-import { useGameStore } from './store/gameStore'
 
 export default function App() {
-  useSocket()   // initialise socket connection
-  const room = useGameStore(s => s.room)
+  useSocket()
 
   return (
     <div className="relative min-h-screen">

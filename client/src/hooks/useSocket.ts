@@ -10,7 +10,8 @@ let socket: AppSocket | null = null
 
 export function getSocket(): AppSocket {
   if (!socket) {
-    socket = io(import.meta.env.VITE_SERVER_URL || 'http://localhost:3001', {
+    const serverUrl = (import.meta as { env: Record<string, string> }).env.VITE_SERVER_URL || 'http://localhost:3001'
+    socket = io(serverUrl, {
       autoConnect: false,
       transports: ['websocket'],
     })
@@ -49,7 +50,8 @@ export function useSocket() {
     })
 
     s.on('phase:changed', (phase, round) => {
-      store.setRoom(store.room ? { ...store.room, phase, round } : null)
+      const currentRoom = store.room
+      store.setRoom(currentRoom ? { ...currentRoom, phase, round } : null)
       sound.play('phase')
       if (phase === 'night') sound.play('ambience')
       if (phase === 'day')   { sound.stop('ambience'); sound.play('day') }
@@ -66,7 +68,8 @@ export function useSocket() {
 
     s.on('game:ended', (result) => {
       store.addGameResult(result)
-      store.setRoom(store.room ? { ...store.room, phase: 'ended' } : null)
+      const currentRoom = store.room
+      store.setRoom(currentRoom ? { ...currentRoom, phase: 'ended' } : null)
       sound.stopAll()
       sound.play(result.winner === 'village' ? 'villageWin' : 'mafiaWin')
     })

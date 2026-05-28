@@ -1,32 +1,20 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Room, Player, Phase, GameResult, VoteTally } from '../types/game'
+import type { Room, Player, GameResult, VoteTally } from '../types/game'
 
 interface GameStore {
-  // Connection
   socketId:    string | null
   isConnected: boolean
-
-  // Room
   room:        Room | null
   myPlayerId:  string | null
-
-  // Local reveal state (client-only)
   revealIndex:   number
-  revealOrder:   string[]  // player ids in reveal order
+  revealOrder:   string[]
   roleShown:     boolean
-
-  // Voting
   voteTally:   VoteTally
-
-  // History (persisted)
   gameHistory: GameResult[]
-
-  // UI
   isMuted:     boolean
   volume:      number
 
-  // Actions
   setSocketId:     (id: string) => void
   setConnected:    (v: boolean) => void
   setRoom:         (room: Room | null) => void
@@ -39,7 +27,6 @@ interface GameStore {
   setMuted:        (v: boolean) => void
   setVolume:       (v: number) => void
 
-  // Selectors
   getMe: () => Player | null
   getAlivePlayers: () => Player[]
   getEliminatedPlayers: () => Player[]
